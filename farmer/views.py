@@ -14,7 +14,7 @@ def StartFarm(request):
     
     context = {
         "farm":farm,
-        "farmstatus":fm
+        # "farmstatus":fm
         
     }
     return render(request,"farmer/startfarm.html",context)
