@@ -36,7 +36,10 @@
                     <a href="{%url 'DespachOrderCustomer' i.id %}" class="btn btn-outline-info btn-sm">Despach Order</a>
                     <a href="{%url 'RejectOrderCustomer' i.id %}" class="btn btn-outline-danger btn-sm">Reject Order</a>
                     <a href="{%url 'DeleteOrderCustomer' i.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                    <a href="{%url 'CustomerView' i.user.id %}" type="" class="btn btn-outline-dark btn-sm">View</a> 
                 </td>
+
+                
                 {% endif %}
                 {% endfor %}
             </tr>

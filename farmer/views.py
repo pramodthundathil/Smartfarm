@@ -4,6 +4,19 @@ from .models import SeedFarm,FarmStatus
 from Expert.models import FarmerProducts
 from Home.models import UserData
 from Expert.models import FramemerCheckout
+from django.contrib.auth.models import User
+
+import razorpay
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string
+from django.http import HttpResponseBadRequest
+from django.contrib.auth.decorators import login_required
+from datetime import datetime
+
+razorpay_client = razorpay.Client(
+  auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
+
 
 
 def StartFarm(request):
@@ -85,6 +98,7 @@ def ProductSignleView(request,pk):
     
     product1 = FarmerProducts.objects.get(id = pk)
     
+    
     if request.method == "POST":
         name = request.POST["name"]
         phone = request.POST["phone"]
@@ -108,7 +122,8 @@ def ProductSignleView(request,pk):
         
         checkout = FramemerCheckout.objects.create(product = product1 ,user = request.user,status = "Customer Ordered")
         checkout.save()
-        return redirect("FarmerMybooking")
+        
+        return redirect("MakePayment" ,pk =pk)
         
     context = {
         "product":product,
@@ -117,6 +132,9 @@ def ProductSignleView(request,pk):
         # "form":form
         
     }
+    
+    
+    
     return render(request,"farmer/farmerproductview.html",context)
 
 def CancelOrderFarmer(request,pk):
@@ -135,6 +153,83 @@ def DeleteOrderFarmer(request,pk):
 def MyProducts(request):
     return render(request,"farmer/myproducts.html")
 
+
+def CustomerView(request,pk):
+    user  = User.objects.get(id = pk)
+    userdata = UserData.objects.filter(user = user)
+    return render(request,'farmer/viewcustomer.html',{"udata":userdata})
+
+
+def MakePayment(request,pk):
+    
+    product1 = FarmerProducts.objects.get(id = pk)
+    
+    currency = 'INR'
+    amount = product1.Product_price * 100 # Rs. 200
+    
+
+  # Create a Razorpay Order Pyament Integration.....
+    razorpay_order = razorpay_client.order.create(dict(amount=amount,
+                          currency=currency,
+                          payment_capture='0'))
+
+  # order id of newly created order.
+    razorpay_order_id = razorpay_order["id"]
+    callback_url = 'paymenthandler'
+
+  # we need to pass these details to frontend.
+    context = {}
+    context['razorpay_order_id'] = razorpay_order_id
+    context['razorpay_merchant_key'] = settings.RAZOR_KEY_ID
+    context['razorpay_amount'] = amount
+    context['currency'] = currency
+    context['callback_url'] = callback_url 
+    context['slotid'] = "1"
+    
+    return render(request,"farmer/makepayment.html",context)
+
+@csrf_exempt
+def paymenthandler(request):
+    if request.method == "POST":
+        try:
+            payment_id = request.POST.get('razorpay_payment_id', '')
+            razorpay_order_id = request.POST.get('razorpay_order_id', '')
+            signature = request.POST.get('razorpay_signature', '')
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': payment_id,
+                'razorpay_signature': signature
+            }
+
+      # verify the payment signature.
+            result = razorpay_client.utility.verify_payment_signature(params_dict)
+            if result is not None:
+                amount = 800 * 100 # Rs. 200
+                try:
+                    print("working 1")
+                    razorpay_client.payment.capture(payment_id, amount)
+                    return redirect('Success')
+          # render success page on successful caputre of payment
+                except:
+                    print("working 2")
+                    return redirect('Success')
+                    
+                    
+          # if there is an error while capturing payment.
+            else:
+                return render(request, 'paymentfail.html')
+        # if signature verification fails.    
+        except:
+            return HttpResponseBadRequest()
+        
+      # if we don't find the required parameters in POST data
+    else:
+  # if other than POST request is made.
+        return HttpResponseBadRequest()
+    
+def Success(request):
+    return render(request,'farmer/Paymentconfirm.html')
+        
 
 
 

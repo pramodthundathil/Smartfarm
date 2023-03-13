@@ -13,5 +13,10 @@ urlpatterns = [
     path("MyProducts",views.MyProducts,name="MyProducts"),
     path("CancelOrderFarmer/<int:pk>",views.CancelOrderFarmer,name="CancelOrderFarmer"),
     path("DeleteOrderFarmer/<int:pk>",views.DeleteOrderFarmer,name="DeleteOrderFarmer"),
+    path("CustomerView/<int:pk>",views.CustomerView,name="CustomerView"),
+    path("MakePayment/<int:pk>",views.MakePayment,name="MakePayment"),
+    path('MakePayment/paymenthandler', views.paymenthandler, name='MakePayment/paymenthandler'),
+    path("Success",views.Success,name="Success")
+    
     
 ]

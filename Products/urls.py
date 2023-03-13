@@ -14,6 +14,9 @@ urlpatterns = [
     path("DespachOrderCustomer/<int:pk>",views.DespachOrderCustomer,name="DespachOrderCustomer"),
     path("RejectOrderCustomer/<int:pk>",views.RejectOrderCustomer,name="RejectOrderCustomer"),
     path("DeleteOrderCustomer/<int:pk>",views.DeleteOrderCustomer,name="DeleteOrderCustomer"),
+    path("CustomerPayment/<int:pk>",views.CustomerPayment,name="CustomerPayment"),
+    path("CustomerPayment/paymenthandlercus",views.paymenthandlercus,name="CustomerPayment/paymenthandlercus"),
+    path("Success1",views.Success1,name="Success1")
     
           
     
