@@ -38,6 +38,7 @@
             </div>
             <div class="col-lg-6">
                 <div class="d-block bg-white h-100 text-center p-5 pb-lg-0 formcontainer">
+                    <h5 class="text-danger">{{form.errors}}</h5>
                     <form method="post">
                     {% csrf_token %}
 
